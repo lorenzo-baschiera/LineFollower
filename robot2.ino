@@ -5,10 +5,11 @@ Servo servoRight;
 Servo servoLeft;
 
 void setup() {
+  Serial.begin(9400);
 
-  pinMode(CNY, INPUT);
-  pinMode(CNY, INPUT);
-  pinMode(CNY, INPUT);
+  pinMode(5, INPUT);
+  pinMode(4, INPUT);
+  pinMode(3, INPUT);
   
 
   servoRight.attach(pindx);
@@ -22,7 +23,7 @@ void setup() {
 }
 
 void loop() {
-
+  Serial.println (digitalRead(5));
 
 }
 void forward(){
