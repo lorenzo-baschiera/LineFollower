@@ -17,7 +17,7 @@ Servo servoRight;
 Servo servoLeft;
 
 void setup() {
-  Serial.begin(9400);
+  Serial.begin(9600);
 
   pinMode(5, INPUT);
   pinMode(4, INPUT);
@@ -35,8 +35,14 @@ void setup() {
 }
 
 void loop() {
-  Serial.println (digitalRead(5));
 
+  int sens1=digitalRead(5);
+  int sens2=digitalRead(4);
+  int sens3=digitalRead(3);
+  delay(250);
+  if(sens1)  Serial.println("Sensore 1");
+  if(sens2)  Serial.println("Sensore 2");
+  if(sens3)  Serial.println("Sensore 3");
 }
 void forward(){
   servoRight.writeMicroseconds(orardx); 
