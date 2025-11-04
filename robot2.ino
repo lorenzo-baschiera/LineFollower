@@ -1,6 +1,18 @@
+/*
+Baschiera Lorenzo
+Floreano Ian
+Sebastianutti Elias
+
+CLASSE 4 TEL A - I.S.I.S. ARTURO MALIGNANI
+
+DATA INIZIO: 
+*/
+
 #include <Servo.h>
+
 const int antsx=1700,antdx=1685,orarsx=1300,orardx=1360,fermo=1500;
 const int pinsx=12,pindx=13;
+
 Servo servoRight;
 Servo servoLeft;
 
