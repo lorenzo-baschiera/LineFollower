@@ -35,21 +35,22 @@ void setup() {
 }
 
 void loop() {
-
+  int sx2=digitalRead(6);
   int sx=digitalRead(5);
   int ce=digitalRead(4);
   int dx=digitalRead(3);
-  
-  if(sx==1 && ce==0 && dx==1){
+  int dx2=digitalRead(2);
+
+  if((sx==1 && ce==0 && dx==1)|| (sx==0 && ce==0 && dx==0 )){
     forward();
   }
-   if((sx==1 && ce==0 && dx==0) || (sx==1 && ce==1 && dx==0)){
+   if((sx==1 && ce==0 && dx==0) || (sx==1 && ce==1 && dx==0) || (sx==0 && ce==0 && dx==0 && dx2==0 && sx2==1)){
     turnright();
   }
-  if((sx==0 && ce==0 && dx==1) || (sx==0 && ce==1 && dx==1)){
+  if((sx==0 && ce==0 && dx==1) || (sx==0 && ce==1 && dx==1) || (sx==0 && ce==0 && dx==0 && dx2==1 && sx2==0)){
     turnleft();
   }
-  if(sx==0 && ce==0 && dx==0){
+  if(sx==0 && ce==0 && dx==0 && dx2==0 && sx2==0){
     servoRight.writeMicroseconds(fermo); 
     servoLeft.writeMicroseconds(fermo);
   }
