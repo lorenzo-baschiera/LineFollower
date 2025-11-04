@@ -1,0 +1,55 @@
+/*
+Baschiera Lorenzo
+Floreano Ian
+Sebastianutti Elias
+
+CLASSE 4 TEL A - I.S.I.S. ARTURO MALIGNANI
+
+DATA INIZIO: 
+*/
+
+#include <Servo.h>
+
+const int antsx=1700,antdx=1685,orarsx=1300,orardx=1360,fermo=1500;
+const int pinsx=12,pindx=13;
+
+Servo servoRight;
+Servo servoLeft;
+
+void setup() {
+  Serial.begin(9600);
+
+ 
+  
+
+  servoRight.attach(pindx);
+  servoLeft.attach(pinsx);
+
+  servoRight.writeMicroseconds(fermo); 
+  servoLeft.writeMicroseconds(fermo); 
+  delay(3000);
+
+
+}
+
+void loop() {
+
+  int sx=analogRead(A1);
+  int ce=analogRead(A2);
+  int dx= analogRead(A3);
+
+
+  Serial.println("LETTURA");
+
+  Serial.print("Sensore Sx: ");
+  Serial.println(sx);
+
+  Serial.print("Sensore Ce: ");
+  Serial.println(ce);
+
+  Serial.print("Sensore Dx: ");
+  Serial.println(dx);
+
+  delay(1000);
+  
+}
