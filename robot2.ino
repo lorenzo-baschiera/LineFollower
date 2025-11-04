@@ -36,13 +36,24 @@ void setup() {
 
 void loop() {
 
-  int sens1=digitalRead(5);
-  int sens2=digitalRead(4);
-  int sens3=digitalRead(3);
-  delay(250);
-  if(sens1)  Serial.println("Sensore 1");
-  if(sens2)  Serial.println("Sensore 2");
-  if(sens3)  Serial.println("Sensore 3");
+  int sx=digitalRead(5);
+  int ce=digitalRead(4);
+  int dx=digitalRead(3);
+  
+  if(sx==1 && ce==0 && dx==1){
+    forward();
+  }
+   if((sx==1 && ce==0 && dx==0) || (sx==1 && ce==1 && dx==0)){
+    turnright();
+  }
+  if((sx==0 && ce==0 && dx==1) || (sx==0 && ce==1 && dx==1)){
+    turnleft();
+  }
+  if(sx==0 && ce==0 && dx==0){
+    servoRight.writeMicroseconds(fermo); 
+    servoLeft.writeMicroseconds(fermo);
+  }
+
 }
 void forward(){
   servoRight.writeMicroseconds(orardx); 
