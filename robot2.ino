@@ -14,6 +14,8 @@ const int antSx=1700, antDx=1685, orarSx=1300, orarDx=1360, fermo=1500;	//defini
 
 const int pinSx=12,pinDx=13;													//definizione pin dei servomotori
 
+const int sogliaSensore = 400;
+
 Servo servoRight;
 Servo servoLeft;
 
@@ -38,11 +40,17 @@ void setup() {
 
 void loop() {
 
-  int sx2=digitalRead(6);
-  int sx=digitalRead(5);
-  int ce=digitalRead(4);
-  int dx=digitalRead(3);
-  int dx2=digitalRead(2);
+  int sx2 = analogRead(A0);
+  int sx  = analogRead(A1);
+  int ce  = analogRead(A2);
+  int dx  = analogRead(A3);
+  int dx2 = analogRead(A4);
+
+  if(sx2 > sogliaSensore) sx2 = 1; else sx2 = 0;
+  if(sx  > sogliaSensore) sx =  1; else sx  = 0;
+  if(dx2 > sogliaSensore) dx2 = 1; else dx2 = 0;
+  if(dx  > sogliaSensore) dx =  1; else dx  = 0;
+  if(ce  > sogliaSensore) ce =  1; else ce  = 0;
 
   if((sx==1 && ce==0 && dx==1)|| (sx==0 && ce==0 && dx==0 )){
     forward();
@@ -54,8 +62,8 @@ void loop() {
     turnleft();
   }
   if(sx==0 && ce==0 && dx==0 && dx2==0 && sx2==0){
-    servoRight.writeMicroseconds(fermo); 
-    servoLeft.writeMicroseconds(fermo);
+    servoRight.detach();
+    servoLeft.detach();
   }
 
 }
