@@ -10,13 +10,15 @@ DATA INIZIO: 28 ott 2025
 
 #include <Servo.h>
 
-const int antsx=1700,antdx=1685,orarsx=1300,orardx=1360,fermo=1500;
-const int pinsx=12,pindx=13;
+const int antSx=1700, antDx=1685, orarSx=1300, orarDx=1360, fermo=1500;	//definizione sensi di rotazione delle ruote
+
+const int pinSx=12,pinDx=13;													//definizione pin dei servomotori
 
 Servo servoRight;
 Servo servoLeft;
 
 void setup() {
+
   Serial.begin(9600);
 
   pinMode(5, INPUT);
@@ -24,8 +26,8 @@ void setup() {
   pinMode(3, INPUT);
   
 
-  servoRight.attach(pindx);
-  servoLeft.attach(pinsx);
+  servoRight.attach(pinDx);
+  servoLeft.attach(pinSx);
 
   servoRight.writeMicroseconds(fermo); 
   servoLeft.writeMicroseconds(fermo); 
@@ -35,6 +37,7 @@ void setup() {
 }
 
 void loop() {
+
   int sx2=digitalRead(6);
   int sx=digitalRead(5);
   int ce=digitalRead(4);
@@ -57,18 +60,18 @@ void loop() {
 
 }
 void forward(){
-  servoRight.writeMicroseconds(orardx); 
-  servoLeft.writeMicroseconds(antsx); 
+  servoRight.writeMicroseconds(orarDx); 
+  servoLeft.writeMicroseconds(antSx); 
 }
 void backward(){
-  servoRight.writeMicroseconds(antdx); 
-  servoLeft.writeMicroseconds(orarsx); 
+  servoRight.writeMicroseconds(antDx); 
+  servoLeft.writeMicroseconds(orarSx); 
 }
 void turnleft(){
-  servoRight.writeMicroseconds(orardx); 
-  servoLeft.writeMicroseconds(orarsx);
+  servoRight.writeMicroseconds(orarDx); 
+  servoLeft.writeMicroseconds(orarSx);
 }
 void turnright(){
-  servoRight.writeMicroseconds(antdx); 
-  servoLeft.writeMicroseconds(antsx);
+  servoRight.writeMicroseconds(antDx); 
+  servoLeft.writeMicroseconds(antSx);
 }
