@@ -5,7 +5,7 @@ Sebastianutti Elias
 
 CLASSE 4 TEL A - I.S.I.S. ARTURO MALIGNANI
 
-DATA INIZIO: 
+DATA INIZIO: 28 ott 2025
 */
 
 #include <Servo.h>
