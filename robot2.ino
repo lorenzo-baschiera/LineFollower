@@ -17,8 +17,16 @@ const int pinSx=12,pinDx=13;													                  //definizione pin dei
 
 const int sogliaSensore = 400;                                          //Soglia lettura analogica oltre la quale il valore è considerato 1
 
-byte const RXpin=2; //Questo pin va collegato al TX dell'HC-05
-byte const TXpin=3; //Questo pin va collegato all'RX dell'HC-05
+byte const RXpin=5; 
+byte const TXpin=4; 
+
+const int pinTrig=3;     
+const int pinEcho=2;
+const int usTocm=29;
+long duration;           
+float distance;
+
+const int sensorIR=A5;
 
 SoftwareSerial RobotBT(RXpin, TXpin);
 
@@ -36,11 +44,21 @@ void setup() {
   servoRight.writeMicroseconds(fermo); 
   servoLeft.writeMicroseconds(fermo); 
   delay(3000);
+
+  pinMode(pinTrig,OUTPUT);                  
+  pinMode(pinEcho,INPUT);
   
-  Serial.println("Digita comandi AT ... ");
+  
 }
 
 void loop() {
+
+  float volts = analogRead(sensorIR) * 0.004887585;
+  int distance_cm = 29.988 * pow( volts, -1.173);
+  delay(500);
+  if (distance_cm <= 20) {
+    
+  }  
 
   int sx2 = analogRead(A0);
   int sx  = analogRead(A1);
@@ -48,11 +66,12 @@ void loop() {
   int dx  = analogRead(A3);
   int dx2 = analogRead(A4);
 
-  if (Serial.available()){ 
-  RobotBT.write(Serial.read()); 
+  if (Serial.available()){  
+    RobotBT.write(Serial.read()); 
+    
   }
   if (RobotBT.available()){ 
-  Serial.write(RobotBT.read()); 
+    Serial.write(RobotBT.read()); 
   }
 
   if(sx2 > sogliaSensore) sx2 = 1; else sx2 = 0;
@@ -63,7 +82,7 @@ void loop() {
 
   if((sx==1 && ce==0 && dx==1)|| (sx==0 && ce==0 && dx==0 )) forward();
 
-   if((sx==1 && ce==0 && dx==0) || (sx==1 && ce==1 && dx==0) || (sx==0 && ce==0 && dx==0 && dx2==0 && sx2==1)) turnright();
+  if((sx==1 && ce==0 && dx==0) || (sx==1 && ce==1 && dx==0) || (sx==0 && ce==0 && dx==0 && dx2==0 && sx2==1)) turnright();
   
   if((sx==0 && ce==0 && dx==1) || (sx==0 && ce==1 && dx==1) || (sx==0 && ce==0 && dx==0 && dx2==1 && sx2==0)) turnleft();
   
@@ -90,4 +109,22 @@ void turnleft(){
 void turnright(){
   servoRight.writeMicroseconds(antDx); 
   servoLeft.writeMicroseconds(antSx);
+}
+float distanzaHC(){
+  digitalWrite(pinTrig, LOW);               
+  delayMicroseconds(5);                     
+  digitalWrite(pinTrig, HIGH);              
+  delayMicroseconds(10);                    
+  digitalWrite(pinTrig, LOW);              
+  duration = pulseIn(pinEcho, HIGH, 25000); 
+  distance=duration/usTocm/2;               
+  delay(200);
+  return distance;
+}
+void Saltaostacolo( ){
+  float distance2=distanzaHC ();
+
+  
+
+
 }
