@@ -9,6 +9,7 @@ DATA INIZIO: 28 ott 2025
 */
 
 #include <Servo.h>
+#include<SoftwareSerial.h>
 
 const int antSx=1700, antDx=1685, orarSx=1300, orarDx=1360, fermo=1500;	//definizione sensi di rotazione delle ruote
 
@@ -16,20 +17,27 @@ const int pinSx=12,pinDx=13;													                  //definizione pin dei
 
 const int sogliaSensore = 400;                                          //Soglia lettura analogica oltre la quale il valore è considerato 1
 
+byte const RXpin=2; //Questo pin va collegato al TX dell'HC-05
+byte const TXpin=3; //Questo pin va collegato all'RX dell'HC-05
+
+SoftwareSerial RobotBT(RXpin, TXpin);
+
 Servo servoRight;
 Servo servoLeft;
 
 void setup() {
 
   Serial.begin(9600);
-
+  RobotBT.begin(38400);
+  
   servoRight.attach(pinDx);
   servoLeft.attach(pinSx);
-
+  
   servoRight.writeMicroseconds(fermo); 
   servoLeft.writeMicroseconds(fermo); 
   delay(3000);
-
+  
+  Serial.println("Digita comandi AT ... ");
 }
 
 void loop() {
@@ -39,6 +47,13 @@ void loop() {
   int ce  = analogRead(A2);
   int dx  = analogRead(A3);
   int dx2 = analogRead(A4);
+
+  if (Serial.available()){ 
+  RobotBT.write(Serial.read()); 
+  }
+  if (RobotBT.available()){ 
+  Serial.write(RobotBT.read()); 
+  }
 
   if(sx2 > sogliaSensore) sx2 = 1; else sx2 = 0;
   if(sx  > sogliaSensore) sx =  1; else sx  = 0;
