@@ -31,6 +31,7 @@ const int sensorIR=A5;
 SoftwareSerial RobotBT(RXpin, TXpin);
 
 int comando;
+int ostacolo=0;
 
 Servo servoRight;
 Servo servoLeft;
@@ -58,16 +59,23 @@ void loop() {
   float volts = analogRead(sensorIR) * 0.004887585;
   int distance_cm = 29.988 * pow( volts, -1.173);
   delay(500);
+
   if (distance_cm <= 20) {
+    RobotBT.write('1');
+    if (RobotBT.available()){
+      ostacolo=RobotBT.read();
+      if (ostacolo ==1)
+        Serial.println("Ciao hai incontrato un'ostacolo ora dovrai scegliere come superarlo");
+        Serial.println("Se vuoi che lo superi autonomamente digita 1 ");
+        Serial.println("Se vuoi comandarlo tu con le frecce digita 2 ");
+        comando=Serial.read();
 
-    Serial.println("Ciao hai incontrato un'ostacolo ora dovrai scegliere come superarlo");
-    Serial.println("Se vuoi che lo superi autonomamente digita 1 ");
-    Serial.println("Se vuoi comandarlo tu con le frecce digita 2 ");
-    comando=Serial.read();
 
+    }
+    
     switch (comando) {
       case 1:
-        
+       
         break;
       case 2:
         
