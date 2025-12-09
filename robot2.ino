@@ -17,8 +17,8 @@ const int pinSx=12,pinDx=13;													                  //definizione pin dei
 
 const int sogliaSensore = 400;                                          //Soglia lettura analogica oltre la quale il valore è considerato 1
 
-byte const RXpin=5; 
-byte const TXpin=4; 
+byte const RXpin=0; 
+byte const TXpin=1; 
 
 const int pinTrig=3;     
 const int pinEcho=2;
@@ -64,12 +64,13 @@ void loop() {
     RobotBT.write('1');
     if (RobotBT.available()){
       ostacolo=RobotBT.read();
-      if (ostacolo ==1)
+      if (ostacolo ==1){
         Serial.println("Ciao hai incontrato un'ostacolo ora dovrai scegliere come superarlo");
         Serial.println("Se vuoi che lo superi autonomamente digita 1 ");
         Serial.println("Se vuoi comandarlo tu con le frecce digita 2 ");
         comando=Serial.read();
-
+      }
+  }
 
     }
     
@@ -85,7 +86,7 @@ void loop() {
           servoLeft.detach();
         break;
     }
-  }  
+  
 
   int sx2 = analogRead(A0);
   int sx  = analogRead(A1);
@@ -93,13 +94,7 @@ void loop() {
   int dx  = analogRead(A3);
   int dx2 = analogRead(A4);
 
-  if (Serial.available()){  
-    RobotBT.write(Serial.read()); 
-    
-  }
-  if (RobotBT.available()){ 
-    Serial.write(RobotBT.read()); 
-  }
+  
 
   if(sx2 > sogliaSensore) sx2 = 1; else sx2 = 0;
   if(sx  > sogliaSensore) sx =  1; else sx  = 0;
@@ -125,10 +120,7 @@ void forward(){
   servoRight.writeMicroseconds(orarDx); 
   servoLeft.writeMicroseconds(antSx); 
 }
-void backward(){
-  servoRight.writeMicroseconds(antDx); 
-  servoLeft.writeMicroseconds(orarSx); 
-}
+
 void turnleft(){
   servoRight.writeMicroseconds(orarDx); 
   servoLeft.writeMicroseconds(orarSx);
@@ -137,6 +129,7 @@ void turnright(){
   servoRight.writeMicroseconds(antDx); 
   servoLeft.writeMicroseconds(antSx);
 }
+
 float distanzaHC(){
   digitalWrite(pinTrig, LOW);               
   delayMicroseconds(5);                     
@@ -148,10 +141,5 @@ float distanzaHC(){
   delay(200);
   return distance;
 }
-void Saltaostacolo( ){
-  float distance2=distanzaHC ();
-
-  
 
 
-}
