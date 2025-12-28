@@ -2,11 +2,12 @@
 Baschiera Lorenzo
 Floreano Ian
 Sebastianutti Elias
-
+  
 CLASSE 4 TEL A - I.S.I.S. ARTURO MALIGNANI
 
 DATA INIZIO: 28 ott 2025
 */
+
 
 #include <Servo.h>
 #include<SoftwareSerial.h>
@@ -17,24 +18,33 @@ const int pinSx=12,pinDx=13;													                  //definizione pin dei
 
 const int sogliaSensore = 200;                                          //Soglia lettura analogica oltre la quale il valore è considerato 1
 
+// pin sensore bluetooth
 byte const RXpin=5; 
 byte const TXpin=4; 
 
+SoftwareSerial RobotBT(RXpin, TXpin);
+
+//pin sensore HC
 const int pinTrig=3;     
 const int pinEcho=2;
 const int usTocm=29;
 long duration;           
-float distanceHC,distanceIR;
 
+//pin sensore IR
 const int sensorIR=A5;
 
-SoftwareSerial RobotBT(RXpin, TXpin);
+float distanceHC,distanceIR;
 
+//pin comandi salta ostacolo
 int comando;
 int ostacolo=0;
 
+//dichiarazione dei servomotori
 Servo servoRight;
 Servo servoLeft;
+
+//DICHIARAZIONI--------------------------------------------------------------------
+
 
 void setup() {
 
@@ -44,7 +54,6 @@ void setup() {
   servoRight.attach(pinDx);
   servoLeft.attach(pinSx);
   
-
   pinMode(pinTrig,OUTPUT);                  
   pinMode(pinEcho,INPUT);
   
@@ -59,11 +68,15 @@ void loop() {
 
   if(distanceIR > 20) movimento();
   else{
-    distanceHC = distanceHCmisura();
-    SuperaOstacolo(distanceHC);
+
+    SuperaOstacolo();
+    
   }
   
 }
+
+
+//FUNZIONI--------------------------------------------------------------------
 
 //funzioni di movimento
 void forward(){
@@ -84,12 +97,16 @@ void stop(){
   servoLeft.writeMicroseconds(fermo); 
   delay(3000);
 }
+
+//distanza con IR
 float distanceIRmisura(){
   float volts = analogRead(sensorIR) * 0.004887585;
   float distance_cm = 29.988 * pow( volts, -1.173);
  
   return distance_cm;
 }
+
+//distanza con HC
 float distanceHCmisura(){
   digitalWrite(pinTrig, LOW);               
   delayMicroseconds(5);                     
@@ -101,11 +118,18 @@ float distanceHCmisura(){
   delay(200);
   return distance;
 }
-void SuperaOstacolo(float distanceHC){
-int dx2 = 600;
-  do{
+
+//script salta ostacolo
+void SuperaOstacolo(){
+
+  do{ 
+    distanceHC = distanceHCmisura();
     turnleft();
-    delay(2000);
+    delay(1000);
+    }while(distanceHC >0 && distanceHC<20 );
+
+  do{
+    distanceHC = distanceHCmisura();
     if(distanceHC>15 ){
       turnright();
     }
@@ -123,6 +147,7 @@ int dx2 = 600;
 
 }
 
+//script linefollowing
 void movimento(){
   int sx2 = analogRead(A0);
   int sx  = analogRead(A1);
