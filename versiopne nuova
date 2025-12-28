@@ -16,6 +16,7 @@ const int antSx=1700, antDx=1685, orarSx=1300, orarDx=1360, fermo=1500;	//defini
 
 const int pinSx=12,pinDx=13;													                  //definizione pin dei servomotori
 
+int  sx2,sx,ce,dx,dx2;
 const int sogliaSensore = 200;                                          //Soglia lettura analogica oltre la quale il valore è considerato 1
 
 // pin sensore bluetooth
@@ -149,11 +150,11 @@ void SuperaOstacolo(){
 
 //script linefollowing
 void movimento(){
-  int sx2 = analogRead(A0);
-  int sx  = analogRead(A1);
-  int ce  = analogRead(A2);
-  int dx  = analogRead(A3);
-  int dx2 = analogRead(A4);
+  sx2 = analogRead(A0);
+  sx  = analogRead(A1);
+  ce  = analogRead(A2);
+  dx  = analogRead(A3);
+  dx2 = analogRead(A4);
 
   
 
