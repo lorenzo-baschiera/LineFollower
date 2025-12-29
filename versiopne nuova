@@ -16,8 +16,8 @@ const int antSx=1700, antDx=1685, orarSx=1300, orarDx=1360, fermo=1500;	//defini
 
 const int pinSx=12,pinDx=13;													                  //definizione pin dei servomotori
 
-int  sx2,sx,ce,dx,dx2;
-const int sogliaSensore = 200;                                          //Soglia lettura analogica oltre la quale il valore è considerato 1
+
+const int sogliaSensore = 300;                                          //Soglia lettura analogica oltre la quale il valore è considerato 1
 
 // pin sensore bluetooth
 byte const RXpin=5; 
@@ -33,6 +33,8 @@ long duration;
 
 //pin sensore IR
 const int sensorIR=A5;
+float ultimaDistanza = 60.0;
+
 
 float distanceHC,distanceIR;
 
@@ -55,25 +57,36 @@ void setup() {
   servoRight.attach(pinDx);
   servoLeft.attach(pinSx);
   
+  servoRight.writeMicroseconds(fermo); 
+  servoLeft.writeMicroseconds(fermo);
+  
   pinMode(pinTrig,OUTPUT);                  
   pinMode(pinEcho,INPUT);
   
-  stop();
+  // Aspetta che il sensore IR si stabilizzi (gli Sharp sono lenti a caricarsi)
+  delay(500); 
+  
+  stop(); // Questo farà i tuoi 3 secondi di pausa
   
 }
 
 void loop() {
-
+  /*
   distanceIR = distanceIRmisura();
-  delay(20);
-
-  if(distanceIR > 20) movimento();
-  else{
-
-    SuperaOstacolo();
-    
-  }
   
+  // Serial.println(distanceIR); // Usalo solo per test, poi commentalo
+  
+  if(distanceIR > 20.0){
+    movimento(); 
+  } 
+  else { 
+    // Se è <= 20, copre anche il bug a 3.0
+    stop();             
+    SuperaOstacolo();   
+    ultimaDistanza = 60.0; // Reset fondamentale qui!
+  }
+  */
+  movimento(); 
 }
 
 
@@ -93,18 +106,78 @@ void turnright(){
   servoRight.writeMicroseconds(antDx); 
   servoLeft.writeMicroseconds(antSx);
 }
+
+void left_angoloretto(){
+  servoRight.writeMicroseconds(orarDx); 
+  servoLeft.writeMicroseconds(orarSx);
+  delay(350);
+}
 void stop(){
   servoRight.writeMicroseconds(fermo); 
   servoLeft.writeMicroseconds(fermo); 
   delay(3000);
+
 }
 
-//distanza con IR
-float distanceIRmisura(){
-  float volts = analogRead(sensorIR) * 0.004887585;
-  float distance_cm = 29.988 * pow( volts, -1.173);
- 
-  return distance_cm;
+
+//script linefollowing
+void movimento(){
+  int sx2 = analogRead(A0);
+  int sx  = analogRead(A1);
+  int ce  = analogRead(A2);
+  int dx  = analogRead(A3);
+  int dx2 = analogRead(A4);
+
+  
+
+  if(sx2 > sogliaSensore) sx2 = 1; else sx2 = 0;
+  if(sx  > sogliaSensore) sx =  1; else sx  = 0;
+  if(dx2 > sogliaSensore) dx2 = 1; else dx2 = 0;
+  if(dx  > sogliaSensore) dx =  1; else dx  = 0;
+  if(ce  > sogliaSensore) ce =  1; else ce  = 0;
+
+  if((sx==1 && ce==0 && dx==1)|| (sx==0 && ce==0 && dx==0 )||(sx==1 && ce==1 && dx==1)) forward();
+
+  if((sx==1 && ce==0 && dx==0) || (sx==1 && ce==1 && dx==0) || (sx==0 && ce==0 && dx==0 && dx2==0 && sx2==1)) turnright();
+  
+  if((sx==0 && ce==0 && dx==1) || (sx==0 && ce==1 && dx==1) || (sx==0 && ce==0 && dx==0 && dx2==1 && sx2==0)) turnleft();
+  
+  if(sx==0 && ce==0 && dx==0 && dx2==0 && sx2==0){
+    stop();
+  }
+}
+
+
+// distanz con IR
+
+
+
+
+float distanceIRmisura() {
+  analogRead(sensorIR); // LETTURA A VUOTO: pulisce il convertitore
+  delayMicroseconds(100);
+  int raw = analogRead(sensorIR);
+  float volts = raw * 0.004887585;
+  
+  // Se i volt sono bassissimi, siamo in campo libero
+  if (volts < 0.4) {
+    ultimaDistanza = 60.0;
+    return 60.0;
+  }
+
+  float distanzaCalcolata = 30.0 / volts;
+  float diff = ultimaDistanza - distanzaCalcolata;
+
+  // LOGICA DI BLOCCO
+  // Se la distanza aumenta improvvisamente (diff < -2) mentre eravamo vicini
+  // OPPURE se siamo già bloccati (ultimaDistanza <= 3.0) 
+  // MA i volt confermano che c'è qualcosa (volts > 1.2)
+  if ((diff < -2.0 && ultimaDistanza < 15.0) || (ultimaDistanza <= 3.0 && volts > 1.2)) {
+    distanzaCalcolata = 3.0; 
+  }
+
+  ultimaDistanza = distanzaCalcolata;
+  return distanzaCalcolata;
 }
 
 //distanza con HC
@@ -116,18 +189,15 @@ float distanceHCmisura(){
   digitalWrite(pinTrig, LOW);              
   duration = pulseIn(pinEcho, HIGH, 25000); 
   float distance=duration/usTocm/2;               
-  delay(200);
+  delay(50);
   return distance;
 }
 
+
 //script salta ostacolo
 void SuperaOstacolo(){
-
-  do{ 
-    distanceHC = distanceHCmisura();
-    turnleft();
-    delay(1000);
-    }while(distanceHC >0 && distanceHC<20 );
+  int dx2;
+  left_angoloretto();
 
   do{
     distanceHC = distanceHCmisura();
@@ -141,38 +211,12 @@ void SuperaOstacolo(){
       forward();
     }
 
-     dx2 = analogRead(A4);
+    dx2 = analogRead(A4);
 
-  }while(dx2 > 200);
+  }while(dx2 > 300);
   
+  ultimaDistanza = 60.0;
 
 }
 
-//script linefollowing
-void movimento(){
-  sx2 = analogRead(A0);
-  sx  = analogRead(A1);
-  ce  = analogRead(A2);
-  dx  = analogRead(A3);
-  dx2 = analogRead(A4);
-
-  
-
-  if(sx2 > sogliaSensore) sx2 = 1; else sx2 = 0;
-  if(sx  > sogliaSensore) sx =  1; else sx  = 0;
-  if(dx2 > sogliaSensore) dx2 = 1; else dx2 = 0;
-  if(dx  > sogliaSensore) dx =  1; else dx  = 0;
-  if(ce  > sogliaSensore) ce =  1; else ce  = 0;
-
-  if((sx==1 && ce==0 && dx==1)|| (sx==0 && ce==0 && dx==0 )) forward();
-
-  if((sx==1 && ce==0 && dx==0) || (sx==1 && ce==1 && dx==0) || (sx==0 && ce==0 && dx==0 && dx2==0 && sx2==1)) turnright();
-  
-  if((sx==0 && ce==0 && dx==1) || (sx==0 && ce==1 && dx==1) || (sx==0 && ce==0 && dx==0 && dx2==1 && sx2==0)) turnleft();
-  
-  if(sx==0 && ce==0 && dx==0 && dx2==0 && sx2==0){
-    servoRight.detach();
-    servoLeft.detach();
-  }
-}
 
