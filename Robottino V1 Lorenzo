@@ -20,8 +20,7 @@ const int pinSx=12,pinDx=13;													                  //definizione pin dei
 bool fineSuperamento = false;
 bool finePista = false;
 const int sogliaSensore = 300;                                          //Soglia lettura analogica oltre la quale il valore è considerato 1
-char = sceltaUtente;
-int tempoStartDecisione, tempoCurrDecisione;
+char sceltaUtente;
 
 // pin sensore bluetooth
 byte const RXpin=5; 
@@ -56,7 +55,7 @@ Servo servoLeft;
 void setup() {
 
   Serial.begin(9600);
-  RobotBT.begin(38400);
+  RobotBT.begin(9600); //normalmente lavora a 9600, per configurazione AT si usa 38400
   
   servoRight.attach(pinDx);
   servoLeft.attach(pinSx);
@@ -87,10 +86,7 @@ void loop() {
   }else{
     sceltaUtente = chiediUtente();
     if(sceltaUtente == 'A'){
-      while(fineSuperamento == false){
         SuperaOstacolo();
-      }
-      fineSuperamento = false;
     }else if(sceltaUtente == 'B'){
       //pilotare con bluetooth
     }
@@ -143,7 +139,7 @@ void movimento(){
   if(dx  > sogliaSensore) dx =  1; else dx  = 0;
   if(ce  > sogliaSensore) ce =  1; else ce  = 0;
 
-  if((sx==1 && ce==0 && dx==1)|| (sx==0 && ce==0 && dx==0 )||(sx==1 && ce==1 && dx==1)) forward();
+  if((sx==1 && ce==0 && dx==1)|| (sx==0 && ce==0 && dx==0 )) forward();
 
   if((sx==1 && ce==0 && dx==0) || (sx==1 && ce==1 && dx==0) || (sx==0 && ce==0 && dx==0 && dx2==0 && sx2==1)) turnright();
   
@@ -169,6 +165,8 @@ bool robotSuPista(){
   if(dx2 > sogliaSensore) return true;
   if(dx  > sogliaSensore) return true;
   if(ce  > sogliaSensore) return true;
+
+  return false;
 }
 
 //misura distanza con IR
@@ -190,7 +188,7 @@ float distanceIRmisura() {
   // LOGICA DI BLOCCO
   // Se la distanza aumenta improvvisamente (diff < -2) mentre eravamo vicini
   // OPPURE se siamo già bloccati (ultimaDistanza <= 3.0) 
-  // MA i volt confermano che cè qualcosa (volts > 1.2)
+  // MA i volt confermano che c'è qualcosa (volts > 1.2)
   if ((diff < -2.0 && ultimaDistanza < 15.0) || (ultimaDistanza <= 3.0 && volts > 1.2)) {
     distanzaCalcolata = 3.0; 
   }
@@ -235,55 +233,52 @@ void SuperaOstacolo(){
 
   }while(pista == false);
   
-  fineSuperamento = true;
   ultimaDistanza = 60.0;
 
 }
 
 //lettura di una riga di testo con Bluetooth
 
-String readLineBT(unsigned long timeoutMs) {
-  String s = "";
+char leggiSceltaAB(unsigned long timeoutMs) {
   unsigned long start = millis();
 
   while (millis() - start < timeoutMs) {
-    while (RobotBT.available()) {
+    if (RobotBT.available()) {
       char c = RobotBT.read();
 
-      if (c == '\n') {
-        s.trim();          // toglie spazi e \r
-        return s;
-      }
-      if (c != '\r') s += c;
+      // ignora invio e spazi
+      if (c == '\r' || c == '\n' || c == ' ' || c == '\t') continue;
+
+      // normalizza in maiuscolo
+      if (c >= 'a' && c <= 'z') c = c - ('a' - 'A');
+
+      // accetta solo A o B
+      if (c == 'A' || c == 'B') return c;
+
+      // se arriva altro, lo scarto e continuo ad aspettare
     }
   }
-  s = "";
-  return s; // timeout
+  return 0; // 0 = timeout
 }
+
 
 //funzione domanda utente
 
 char chiediUtente() {
   RobotBT.println();
-  RobotBT.println("Ostacolo Rilevato! Come vuoi superarlo?");
-  RobotBT.println("Rispondi: A per guida autonoma, B per pilotare il robot.");
+  RobotBT.println("Ostacolo rilevato! Come vuoi superarlo?");
+  RobotBT.println("A = guida autonoma, B = pilotare il robot.");
+  RobotBT.println("Scrivi A o B e premi INVIO.");
 
-  String r = readLineBT(30000); // tempo di timeout (30s)
+  char r = leggiSceltaAB(30000); // 30s tempo di Timeout
 
-  if (r.length() == 0) {
+  if (r == 0) {
     RobotBT.println("Timeout: nessuna risposta. Superamento autonomo.");
-    return 'A'; //Se l utente non risponde entro il tempo di timeout il robottino supera l ostacolo in autonomia
+    return 'A';
   }
-
-  r.toUpperCase();
 
   RobotBT.print("Hai scelto: ");
   RobotBT.println(r);
-
-  if (r == 'A' || r == 'B') {
-    return r;
-  } else {
-    return 'A';
-  }
+  return r;
 }
 
