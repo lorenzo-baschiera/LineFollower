@@ -66,8 +66,8 @@ void setup() {
   pinMode(pinTrig,OUTPUT);                  
   pinMode(pinEcho,INPUT);
   
-    RobotBT.println("Connessione OK.");
-    RobotBT.println("Apri un terminale sulla COM Bluetooth e scrivi testo + invio.");
+  RobotBT.println("Connessione OK.");
+  RobotBT.println("Apri un terminale sulla COM Bluetooth e scrivi testo + invio.");
   // Aspetta che il sensore IR si stabilizzi (gli Sharp sono lenti a caricarsi)
   delay(500); 
   
@@ -90,6 +90,12 @@ void loop() {
     }else if(sceltaUtente == 'B'){
       //pilotare con bluetooth
     }
+    else {
+      //fermare il robot
+      servoRight.detach();
+      servoLeft.detach();
+    }
+
   }
   
 }
