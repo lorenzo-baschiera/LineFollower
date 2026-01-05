@@ -1,3 +1,4 @@
+
 /*
 Baschiera Lorenzo
 Floreano Ian
@@ -206,12 +207,15 @@ float distanceHCmisura(){
 
 //script salta ostacolo
 void SuperaOstacolo(){
-  int dx2;
-  left_angoloretto();
+  distanceHC = distanceHCmisura();
   bool pista = false;
 
   do{
-    distanceHC = distanceHCmisura();
+    turnleft();
+  }while(distanceHC>30);
+
+  do{
+    
     if(distanceHC>15 ){
       turnright();
     }
