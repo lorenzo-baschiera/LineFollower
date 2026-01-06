@@ -1,4 +1,3 @@
-
 /*
 Baschiera Lorenzo
 Floreano Ian
@@ -15,7 +14,9 @@ DATA INIZIO: 28 ott 2025
 
 const int antSx=1700, antDx=1700, orarSx=1300, orarDx=1300, fermo=1500;	//definizione sensi di rotazione delle ruote
 
-const int pinSx=12,pinDx=13;													                  //definizione pin dei servomotori
+const int pinSx=12,pinDx=13;											                  //definizione pin dei servomotori
+
+const int pinLed = 6, pinBuzzer = 7;
 
 //variabili di supporto
 bool fineSuperamento = false;
@@ -75,11 +76,17 @@ void loop() {
 
   distanceIR = distanceIRmisura();  //lettura distanza ostacolo sensore Infrarossi
 
-  if(distanceIR > 20){              //se la distanza è tanta continua ad andare
+  if(distanceIR > 10){              //se la distanza è tanta continua ad andare
     if(robotSuPista()) {            //controlla se il robot è sulla pista nera per riprendere la guida autonoma
       if(!finePista) movimento();   //se la pista non è terminata il robot la segue
     }
   }else{
+    for(int i = 0; i < 16; i++){
+      digitalWrite(pinLed, HIGH);
+      delay(250);
+      digitalWrite(pinLed, LOW);
+      delay(250);
+    }
     sceltaUtente = chiediUtente();
     if(sceltaUtente == 'A'){
       SuperaOstacolo();
@@ -153,6 +160,7 @@ void movimento(){
     finePista = true;
     servoRight.detach();
     servoLeft.detach();
+    tone(BUZZER_PIN, 1000, 1000);
   }
 }
 
@@ -206,14 +214,7 @@ void pilota(){
         break;
     }
 
-
-    
-
-
   }while(comando != 'x');
-
-
-
 
 }
 
@@ -223,7 +224,6 @@ float distanceIRmisura() {
   delayMicroseconds(100);
   int raw = analogRead(sensorIR);
   float volts = raw * 0.004887585;
-
 
   float distanzaCalcolata = 30.0 / volts;
  
@@ -269,8 +269,6 @@ void SuperaOstacolo(){
 
   }while(pista == false);
   
-  
-
 }
 
 //lettura di una riga di testo con Bluetooth
