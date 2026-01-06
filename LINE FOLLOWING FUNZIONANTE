@@ -81,6 +81,8 @@ void loop() {
       if(!finePista) movimento();   //se la pista non è terminata il robot la segue
     }
   }else{
+    servoRight.writeMicroseconds(fermo); 
+    servoLeft.writeMicroseconds(fermo); 
     for(int i = 0; i < 16; i++){
       digitalWrite(pinLed, HIGH);
       delay(250);
