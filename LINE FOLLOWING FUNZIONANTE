@@ -160,7 +160,7 @@ void movimento(){
     finePista = true;
     servoRight.detach();
     servoLeft.detach();
-    tone(BUZZER_PIN, 1000, 1000);
+    tone(pinBuzzer, 1000, 8000);
   }
 }
 
