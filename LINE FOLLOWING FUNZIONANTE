@@ -49,6 +49,7 @@ float distanceHC,distanceIR;
 Servo servoRight;
 Servo servoLeft;
 
+
 //DICHIARAZIONI--------------------------------------------------------------------
 
 
@@ -189,24 +190,24 @@ void pilota(){
   do{
     if (RobotBT.available()) {
       char comando = RobotBT.read();
-
+    }
       // ignora invio e spazi
       if (comando == '\r' || comando == '\n' || comando == ' ' || comando == '\t') continue;
 
       switch (comando) {
-      case w:
+      case 'w':
         forward();
         break;
 
-      case a:
+      case 'a':
         turnleft();
         break;
 
-        case s:
+        case 's':
         backward();
         break;
 
-        case d:
+        case 'd':
         turnright();
         break;
 
@@ -214,8 +215,7 @@ void pilota(){
         servoRight.writeMicroseconds(fermo); 
         servoLeft.writeMicroseconds(fermo); 
         break;
-    }
-
+      }
   }while(comando != 'x');
 
 }
@@ -253,7 +253,7 @@ void SuperaOstacolo(){
 
   do{
     turnleft();
-  }while(distanceHC>30);
+  }while(distanceHC>15);
 
   do{
     
