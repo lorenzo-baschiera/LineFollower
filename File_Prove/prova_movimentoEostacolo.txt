@@ -77,7 +77,7 @@ void loop() {
 
   distanceIR = distanceIRmisura();  //lettura distanza ostacolo sensore Infrarossi
 
-  if(distanceIR > 20){              //se la distanza è tanta continua ad andare           //controlla se il robot è sulla pista nera per riprendere la guida autonoma
+  if(distanceIR > 10){              //se la distanza è tanta continua ad andare           //controlla se il robot è sulla pista nera per riprendere la guida autonoma
     movimento();                    //se la pista non è terminata il robot la segue
   }else{
     SuperaOstacolo();
