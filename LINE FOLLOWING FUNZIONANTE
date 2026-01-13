@@ -16,7 +16,7 @@ const int antSx=1700, antDx=1700, orarSx=1300, orarDx=1300, fermo=1500;	//defini
 
 const int pinSx=12,pinDx=13;											                  //definizione pin dei servomotori
 
-const int pinLed = 6, pinBuzzer = 7;
+const int pinLed = 8, pinBuzzer = 7;
 
 //variabili di supporto
 bool fineSuperamento = false;
@@ -26,8 +26,8 @@ char sceltaUtente;
 char comando;
 
 // pin sensore bluetooth
-byte const RXpin=5; 
-byte const TXpin=4; 
+byte const RXpin=4; 
+byte const TXpin=5; 
 
 SoftwareSerial RobotBT(RXpin, TXpin);
 
@@ -63,6 +63,8 @@ void setup() {
   
   pinMode(pinTrig,OUTPUT);                  
   pinMode(pinEcho,INPUT);
+  pinMode(pinLed, OUTPUT);
+  pinMode(pinBuzzer, OUTPUT);
   
   RobotBT.println("Connessione OK.");
   RobotBT.println("Apri un terminale sulla COM Bluetooth e scrivi testo + invio.");
@@ -129,6 +131,11 @@ void turnright(){
 void left_angoloretto(){
   servoRight.writeMicroseconds(orarDx); 
   servoLeft.writeMicroseconds(orarSx);
+  delay(350);
+}
+void right_angoloretto(){
+  servoRight.writeMicroseconds(antDx); 
+  servoLeft.writeMicroseconds(antSx);
   delay(350);
 }
 void stop(){
@@ -241,7 +248,6 @@ float distanceHCmisura(){
   digitalWrite(pinTrig, LOW);              
   duration = pulseIn(pinEcho, HIGH, 25000); 
   float distance=duration/usTocm/2;               
-  delay(50);
   return distance;
 }
 
@@ -253,18 +259,23 @@ void SuperaOstacolo(){
 
   do{
     turnleft();
-  }while(distanceHC>15);
+    delay(100); //da aumentaare
+    distanceHC = distanceHCmisura();
+  }while(distanceHC > 10);
 
   do{
-    
-    if(distanceHC>15 ){
+
+    if(distanceHC>13 ){
       turnright();
+      delay(10);
     }
-    else if(distanceHC<10){
+    else if(distanceHC<8){
       turnleft();
+      delay(10);
     }
-    else if(distanceHC>10 && distanceHC <15){
+    else if(distanceHC>=8 && distanceHC <=13){
       forward();
+      delay(10);
     }
 
     pista = robotSuPista();
