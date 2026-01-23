@@ -12,14 +12,13 @@ DATA INIZIO: 28 ott 2025
 #include <Servo.h>
 #include<SoftwareSerial.h>
 
-const int antSx=1700, antDx=1700, orarSx=1300, orarDx=1300, fermo=1500;	//definizione sensi di rotazione delle ruote
+const int ant=1700, orar=1300, fermo=1500;	//definizione sensi di rotazione delle ruote
 
 const int pinSx=12,pinDx=13;											                  //definizione pin dei servomotori
 
 const int pinLed = 8, pinBuzzer = 7;
 
 //variabili di supporto
-bool fineSuperamento = false;
 bool finePista = false;
 const int sogliaSensore = 200;                                          //Soglia lettura analogica oltre la quale il valore è considerato 1
 char sceltaUtente;
@@ -112,30 +111,30 @@ void loop() {
 
 //funzioni di movimento
 void forward(){
-  servoRight.writeMicroseconds(orarDx); 
-  servoLeft.writeMicroseconds(antSx); 
+  servoRight.writeMicroseconds(orar); 
+  servoLeft.writeMicroseconds(ant); 
 }
 void backward() {
-  servoRight.writeMicroseconds(antDx); 
-  servoLeft.writeMicroseconds(orarSx); 
+  servoRight.writeMicroseconds(ant); 
+  servoLeft.writeMicroseconds(orar); 
 }
 void turnleft(){
-  servoRight.writeMicroseconds(orarDx); 
-  servoLeft.writeMicroseconds(orarSx);
+  servoRight.writeMicroseconds(orar); 
+  servoLeft.writeMicroseconds(orar);
 }
 void turnright(){
-  servoRight.writeMicroseconds(antDx); 
-  servoLeft.writeMicroseconds(antSx);
+  servoRight.writeMicroseconds(ant); 
+  servoLeft.writeMicroseconds(ant);
 }
 
 void left_angoloretto(){
-  servoRight.writeMicroseconds(orarDx); 
-  servoLeft.writeMicroseconds(orarSx);
+  servoRight.writeMicroseconds(orar); 
+  servoLeft.writeMicroseconds(orar);
   delay(350);
 }
 void right_angoloretto(){
-  servoRight.writeMicroseconds(antDx); 
-  servoLeft.writeMicroseconds(antSx);
+  servoRight.writeMicroseconds(ant); 
+  servoLeft.writeMicroseconds(ant);
   delay(350);
 }
 void stop(){
@@ -171,6 +170,7 @@ void movimento(){
     servoRight.detach();
     servoLeft.detach();
     tone(pinBuzzer, 1000, 8000);
+    digitalWrite(pinLed, HIGH);
   }
 }
 
@@ -193,10 +193,11 @@ bool robotSuPista(){
 
 //pilotaggio robot con BT
 void pilota(){
-
+  char comando=' ';
+  RobotBT.println("Guida manuale: w, a, s, d. Premi x per uscire.");
   do{
     if (RobotBT.available()) {
-      char comando = RobotBT.read();
+      comando = RobotBT.read();
     }
       // ignora invio e spazi
       if (comando == '\r' || comando == '\n' || comando == ' ' || comando == '\t') continue;
@@ -253,35 +254,47 @@ float distanceHCmisura(){
 
 
 //script salta ostacolo
-void SuperaOstacolo(){
-  distanceHC = distanceHCmisura();
+void SuperaOstacolo() {
+  // 1. MANOVRA DI USCITA 
+  left_angoloretto(); 
+
   bool pista = false;
-
-  do{
-    turnleft();
-    delay(100); //da aumentaare
+  
+  // 2. CICLO DI AGGIRAMENTO 
+  do {
     distanceHC = distanceHCmisura();
-  }while(distanceHC > 10);
 
-  do{
+    // Filtro per letture errate del sensore HC
+    if (distanceHC <= 0 || distanceHC > 60) distanceHC = 15; 
 
-    if(distanceHC>13 ){
+    if (distanceHC > 15) {      
+      // Se si allontana troppo dall'ostacolo (curva larga), stringi a destra
       turnright();
-      delay(10);
-    }
-    else if(distanceHC<8){
+      delay(30); 
+    } 
+    else if (distanceHC < 8) {  
+      // Se è troppo vicino all'ostacolo (rischia di toccarlo), scarta a sinistra
       turnleft();
-      delay(10);
-    }
-    else if(distanceHC>=8 && distanceHC <=13){
+      delay(30);
+    } 
+    else {                    
+      // Distanza ideale (tra 8 e 15 cm): prosegui dritto
       forward();
-      delay(10);
+      delay(30);
     }
 
+    // 3. CONTROLLO RIENTRO
+   
     pista = robotSuPista();
 
-  }while(pista == false);
+  } while (pista == false); 
+
+  // 4. RADDRIZZAMENTO FINALE
   
+  forward();
+  delay(200);
+  
+  RobotBT.println("Pista ritrovata! Ripresa navigazione autonoma.");
 }
 
 //lettura di una riga di testo con Bluetooth
