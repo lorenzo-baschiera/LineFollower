@@ -163,7 +163,7 @@ void movimento(){
     finePista = true;
     servoRight.detach();
     servoLeft.detach();
-    tone(pinBuzzer, 500, 8000);
+    //tone(pinBuzzer, 500, 8000);
     digitalWrite(pinLed, HIGH);
   }
 }
@@ -271,9 +271,31 @@ void superaOstacolo() {
         else if(distanceHC < 6)  turnleft();
         else forward();
       }else{
-        pista = true;
-        turnleft();
-        delay(200);
+        bool fineRaddrizzamento = false;
+        do{
+          int sx2 = analogRead(A0);
+          int sx  = analogRead(A1);
+          int ce  = analogRead(A2);
+          int dx  = analogRead(A3);
+          int dx2 = analogRead(A4);
+
+          if(sx2 > sogliaSensore) sx2 = 1; else sx2 = 0;
+          if(sx  > sogliaSensore) sx =  1; else sx  = 0;
+          if(dx2 > sogliaSensore) dx2 = 1; else dx2 = 0;
+          if(dx  > sogliaSensore) dx =  1; else dx  = 0;
+          if(ce  > sogliaSensore) ce =  1; else ce  = 0;
+
+          if((sx2==0 && sx==0 && ce==0 && dx==0 && dx2==0) || (sx2==1 && sx==1 && ce==0 && dx==0 && dx2==1) || (sx2==1 && sx==0 && ce==0 && dx==1 && dx2==1) || (sx2==0 && sx==1 && ce==1 && dx==1 && dx2==1)|| (sx2==0 && sx==0 && ce==1 && dx==1 && dx2==1)) {
+            turnleft();
+          }
+
+          else if((sx2==1 && sx==1 && ce==1 && dx==0 && dx2==0) || (sx2==1 && sx==1 && ce==1 && dx==1 && dx2==0)) {
+            forward();
+          }
+            
+          if (sx2==1 && sx==1 && ce==0 && dx==1 && dx2==1) fineRaddrizzamento = true;
+
+        }while(!fineRaddrizzamento);
         stop(50);
       }
     }while(pista == false);
@@ -307,6 +329,7 @@ char leggiSceltaAB(unsigned long timeoutMs) {
 //funzione domanda utente
 
 char chiediUtente() {
+
   RobotBT.println();
   RobotBT.println("Ostacolo rilevato!");
   delay(50);
