@@ -66,7 +66,6 @@ void setup() {
   pinMode(pinBuzzer, OUTPUT);
   
   RobotBT.println("Connessione OK.");
-  RobotBT.println("Apri un terminale sulla COM Bluetooth e scrivi testo + invio.");
   // Aspetta che il sensore IR si stabilizzi (gli Sharp sono lenti a caricarsi)
   delay(500); 
   
@@ -81,7 +80,22 @@ void loop() {
   if(distanceIR > 15) movimento();
 
   else{
-    superaOstacolo();
+    stop(1);
+
+    for(int i = 0; i < 16; i++){
+      digitalWrite(pinLed, HIGH);
+      delay(250);
+      digitalWrite(pinLed, LOW);
+      delay(250);
+    }
+
+    sceltaUtente = chiediUtente();
+
+    if(sceltaUtente == 'A'){
+      superaOstacolo();
+    }else if(sceltaUtente == 'B'){
+      pilota();
+    }
   }
 
 }
@@ -174,7 +188,9 @@ bool robotSuPista(){
 //pilotaggio robot con BT
 void pilota(){
   char comando=' ';
-  RobotBT.println("Guida manuale: w, a, s, d. Premi x per uscire.");
+  RobotBT.println("Guida manuale: w, a, s, d.");
+  delay(50);
+  RobotBT.println("Premi x per uscire.");
   do{
     if (RobotBT.available()) {
       comando = RobotBT.read();
@@ -197,6 +213,10 @@ void pilota(){
 
         case 'd':
         turnright();
+        break;
+
+        case 'o':
+        stop(1);
         break;
 
       default:
@@ -288,14 +308,27 @@ char leggiSceltaAB(unsigned long timeoutMs) {
 
 char chiediUtente() {
   RobotBT.println();
-  RobotBT.println("Ostacolo rilevato! Come vuoi superarlo?");
-  RobotBT.println("A = guida autonoma, B = pilotare il robot.");
-  RobotBT.println("Scrivi A o B e premi INVIO.");
+  RobotBT.println("Ostacolo rilevato!");
+  delay(50);
+
+  RobotBT.println("Come vuoi superarlo?");
+  delay(50);
+
+  RobotBT.println("A = guida autonoma");
+  delay(50);
+
+  RobotBT.println("B = pilotare il robot");
+  delay(50);
+
+  RobotBT.println("Scrivi A o B e premi INVIO");
+
 
   char r = leggiSceltaAB(30000); // 30s tempo di Timeout
 
   if (r == 0) {
-    RobotBT.println("Timeout: nessuna risposta. Superamento autonomo.");
+    RobotBT.println("Timeout: nessuna risposta.");
+    delay(50);
+    RobotBT.println("Superamento autonomo.");
     return 'A';
   }
 
