@@ -23,7 +23,7 @@ bool finePista = false;
 const int sogliaSensore = 200;                                          //Soglia lettura analogica oltre la quale il valore è considerato 1
 char sceltaUtente;
 char comando;
-
+bool pista = true;
 // pin sensore bluetooth
 byte const RXpin=4; 
 byte const TXpin=5; 
@@ -70,40 +70,20 @@ void setup() {
   // Aspetta che il sensore IR si stabilizzi (gli Sharp sono lenti a caricarsi)
   delay(500); 
   
-  stop(); // Questo farà i tuoi 3 secondi di pausa
+  stop(3000); // Questo farà i tuoi 3 secondi di pausa
   
 }
 
-void loop() {
+void loop() {  
 
-  distanceIR = distanceIRmisura();  //lettura distanza ostacolo sensore Infrarossi
+  distanceIR = distanceIRmisura();
 
-  if(distanceIR > 10){              //se la distanza è tanta continua ad andare
-    if(robotSuPista()) {            //controlla se il robot è sulla pista nera per riprendere la guida autonoma
-      if(!finePista) movimento();   //se la pista non è terminata il robot la segue
-    }
-  }else{
-    servoRight.writeMicroseconds(fermo); 
-    servoLeft.writeMicroseconds(fermo); 
-    for(int i = 0; i < 16; i++){
-      digitalWrite(pinLed, HIGH);
-      delay(250);
-      digitalWrite(pinLed, LOW);
-      delay(250);
-    }
-    sceltaUtente = chiediUtente();
-    if(sceltaUtente == 'A'){
-      SuperaOstacolo();
-    }else if(sceltaUtente == 'B'){
-      pilota();
-    }
-    else {
-      //fermare il robot
-      servoRight.detach();
-      servoLeft.detach();
-    }
+  if(distanceIR > 15) movimento();
 
+  else{
+    superaOstacolo();
   }
+
 }
 
 
@@ -137,10 +117,10 @@ void right_angoloretto(){
   servoLeft.writeMicroseconds(ant);
   delay(350);
 }
-void stop(){
+void stop(int tempoFermo){
   servoRight.writeMicroseconds(fermo); 
   servoLeft.writeMicroseconds(fermo); 
-  delay(3000);
+  delay(tempoFermo);
 
 }
 
@@ -169,7 +149,7 @@ void movimento(){
     finePista = true;
     servoRight.detach();
     servoLeft.detach();
-    tone(pinBuzzer, 1000, 8000);
+    tone(pinBuzzer, 500, 8000);
     digitalWrite(pinLed, HIGH);
   }
 }
@@ -182,11 +162,11 @@ bool robotSuPista(){
   int dx  = analogRead(A3);
   int dx2 = analogRead(A4);
 
-  if(sx2 > sogliaSensore) return true;
-  if(sx  > sogliaSensore) return true;
-  if(dx2 > sogliaSensore) return true;
-  if(dx  > sogliaSensore) return true;
-  if(ce  > sogliaSensore) return true;
+  if(sx2 < sogliaSensore) return true;
+  if(sx  < sogliaSensore) return true;
+  if(dx2 < sogliaSensore) return true;
+  if(dx  < sogliaSensore) return true;
+  if(ce  < sogliaSensore) return true;
 
   return false;
 }
@@ -254,47 +234,29 @@ float distanceHCmisura(){
 
 
 //script salta ostacolo
-void SuperaOstacolo() {
-  // 1. MANOVRA DI USCITA 
-  left_angoloretto(); 
-
-  bool pista = false;
-  
-  // 2. CICLO DI AGGIRAMENTO 
-  do {
-    distanceHC = distanceHCmisura();
-
-    // Filtro per letture errate del sensore HC
-    if (distanceHC <= 0 || distanceHC > 60) distanceHC = 15; 
-
-    if (distanceHC > 15) {      
-      // Se si allontana troppo dall'ostacolo (curva larga), stringi a destra
-      turnright();
-      delay(30); 
-    } 
-    else if (distanceHC < 8) {  
-      // Se è troppo vicino all'ostacolo (rischia di toccarlo), scarta a sinistra
+void superaOstacolo() {
+  do{
+      distanceHC = distanceHCmisura();
       turnleft();
-      delay(30);
-    } 
-    else {                    
-      // Distanza ideale (tra 8 e 15 cm): prosegui dritto
-      forward();
-      delay(30);
-    }
+    }while(distanceHC > 15);
+    
+    stop(500);
 
-    // 3. CONTROLLO RIENTRO
-   
-    pista = robotSuPista();
+    do{
+      pista = robotSuPista();
+      distanceHC = distanceHCmisura();
 
-  } while (pista == false); 
-
-  // 4. RADDRIZZAMENTO FINALE
-  
-  forward();
-  delay(200);
-  
-  RobotBT.println("Pista ritrovata! Ripresa navigazione autonoma.");
+      if(!pista){
+        if(distanceHC > 12) turnright();
+        else if(distanceHC < 6)  turnleft();
+        else forward();
+      }else{
+        pista = true;
+        turnleft();
+        delay(200);
+        stop(50);
+      }
+    }while(pista == false);
 }
 
 //lettura di una riga di testo con Bluetooth
