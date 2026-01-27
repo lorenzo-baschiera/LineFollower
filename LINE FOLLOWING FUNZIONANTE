@@ -20,7 +20,7 @@ const int pinLed = 8, pinBuzzer = 7;
 
 //variabili di supporto
 bool finePista = false;
-const int sogliaSensore = 200;                                          //Soglia lettura analogica oltre la quale il valore è considerato 1
+const int sogliaSensore = 300;                                          //Soglia lettura analogica oltre la quale il valore è considerato 1
 char sceltaUtente;
 char comando;
 bool pista = true;
@@ -163,7 +163,7 @@ void movimento(){
     finePista = true;
     servoRight.detach();
     servoLeft.detach();
-    //tone(pinBuzzer, 500, 8000);
+    tone(pinBuzzer, 500, 8000);
     digitalWrite(pinLed, HIGH);
   }
 }
@@ -293,7 +293,7 @@ void superaOstacolo() {
             forward();
           }
             
-          if (sx2==1 && sx==1 && ce==0 && dx==1 && dx2==1) fineRaddrizzamento = true;
+          if ((sx2==1 && sx==1 && ce==0 && dx==1 && dx2==1) || (sx2==1 && sx==1 && ce==1 && dx==0 && dx2==1) || (sx2==1 && sx==0 && ce==1 && dx==1 && dx2==1)) fineRaddrizzamento = true;
 
         }while(!fineRaddrizzamento);
         stop(50);
